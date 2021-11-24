@@ -1,14 +1,37 @@
-import functools
 import networkx
+import networkx as nx
+import matplotlib
 
 from matplotlib import pyplot
 
 
 process_graph = networkx.DiGraph()
+generation_min = 1
 
 
-def draw_process_graph():
-    networkx.draw(process_graph, with_labels=True)
+def draw_etl_process():
+
+    global process_graph
+    global generation_min
+
+    print(nx.get_node_attributes(process_graph, 'np_func'))
+    print(nx.get_node_attributes(process_graph, 'np_generation'))
+
+    pos = networkx.multipartite_layout(
+        process_graph,
+        subset_key='np_generation',
+        align='horizontal',
+    )
+
+    networkx.draw(
+        process_graph,
+        pos=pos,
+        node_color=list(nx.get_node_attributes(process_graph, 'np_generation').values()),
+        vmin=generation_min,
+        vmax=0,
+        cmap=matplotlib.cm.get_cmap('summer'),
+        with_labels=True,
+    )
     pyplot.show()
 
 
@@ -19,17 +42,38 @@ def draw_process_graph():
 
 
 def node_process(func):
+
+    global process_graph
+
     fname = func.__name__
+
     # TODO: assert name is unique
     process_graph.add_node(fname)
     process_graph.nodes[fname]['np_func'] = func
+    process_graph.nodes[fname]['np_generation'] = 0
+
     return func
 
 
 def require_np(np_name: str):
+
     def decorator_require_np(func):
+
+        global process_graph
+        global generation_min
+
         fname = func.__name__
+
         # TODO: assert required node process exists
         process_graph.add_edge(np_name, fname)
+
+        generation = min(
+            process_graph.nodes[fname]['np_generation'],
+            process_graph.nodes[np_name]['np_generation'] - 1,
+        )
+        process_graph.nodes[fname]['np_generation'] = generation
+        generation_min = min(generation_min, generation)
+
         return func
+
     return decorator_require_np
