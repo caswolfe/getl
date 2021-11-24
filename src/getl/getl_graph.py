@@ -26,10 +26,10 @@ def draw_etl_process():
     networkx.draw(
         process_graph,
         pos=pos,
-        node_color=list(nx.get_node_attributes(process_graph, 'np_generation').values()),
-        vmin=generation_min,
-        vmax=0,
-        cmap=matplotlib.cm.get_cmap('summer'),
+        # node_color=list(nx.get_node_attributes(process_graph, 'np_generation').values()),
+        # vmin=generation_min,
+        # vmax=0,
+        # cmap=matplotlib.cm.get_cmap('summer'),
         with_labels=True,
     )
     pyplot.show()
@@ -47,7 +47,8 @@ def node_process(func):
 
     fname = func.__name__
 
-    # TODO: assert name is unique
+    assert fname not in process_graph.nodes, 'node_process name must be unique'
+
     process_graph.add_node(fname)
     process_graph.nodes[fname]['np_func'] = func
     process_graph.nodes[fname]['np_generation'] = 0
@@ -64,7 +65,8 @@ def require_np(np_name: str):
 
         fname = func.__name__
 
-        # TODO: assert required node process exists
+        # assert np_name in process_graph.nodes, 'provided node_process does not exist'
+
         process_graph.add_edge(np_name, fname)
 
         generation = min(
