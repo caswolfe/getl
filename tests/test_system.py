@@ -14,9 +14,6 @@ class MyTestCase(unittest.TestCase):
         gg = getl.getl_graph.build()
         drawing.draw_etl_process(gg)
 
-        # for n in getl.getl_graph.process_graph:
-        #     getl.getl_graph.process_graph.nodes[n]['np_func']()
-
         self.assertEqual(True, True)
 
 

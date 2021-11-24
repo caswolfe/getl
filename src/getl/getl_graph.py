@@ -54,13 +54,16 @@ def build():
             if len(unmet_requirements) > 0:
                 np_to_process.insert(0, (fname, func, requires))
                 continue
-                
             generation = mpg
 
         assert fname not in process_graph.nodes, 'node_process name must be unique'
         process_graph.add_node(fname)
         process_graph.nodes[fname]['np_func'] = func
         process_graph.nodes[fname]['np_generation'] = generation
+
+        if len(requires) != 0:
+            for requirement in requires:
+                process_graph.add_edge(requirement, fname)
 
         np_processed.append(fname)
 
