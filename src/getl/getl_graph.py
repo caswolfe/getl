@@ -1,13 +1,5 @@
 import networkx
-import networkx as nx
-import matplotlib
 
-from matplotlib import pyplot
-from typing import List
-
-
-# process_graph = networkx.DiGraph()
-# generation_min = 1
 potential_node_processes = []
 
 
@@ -33,9 +25,6 @@ def build():
 
     np_processed = []
     np_to_process = potential_node_processes.copy()
-
-    to_process_names = [name for (name, _, _) in np_to_process]
-    print(f'found: {to_process_names}')
 
     while len(np_to_process) > 0:
 
@@ -68,28 +57,6 @@ def build():
         np_processed.append(fname)
 
     return process_graph
-
-
-# def draw_etl_process():
-#
-#     global process_graph
-#     global generation_min
-#
-#     print(nx.get_node_attributes(process_graph, 'np_func'))
-#     print(nx.get_node_attributes(process_graph, 'np_generation'))
-#
-#     pos = networkx.multipartite_layout(
-#         process_graph,
-#         subset_key='np_generation',
-#         align='horizontal',
-#     )
-#
-#     networkx.draw(
-#         process_graph,
-#         pos=pos,
-#         with_labels=True,
-#     )
-#     pyplot.show()
 
 # def custom_wrapper(func):
 #     def wrapper_custom_wrapper(*args, **kwargs):
