@@ -24,9 +24,9 @@ class MyTestCase(unittest.TestCase):
 
         subset_extract02 = graph_util.get_process_starting_at(gg, 'extract02')
 
-        # drawing.draw_etl_process(gg)
-        # drawing.draw_etl_process(rg)
-        # drawing.draw_etl_process(subset_extract02)
+        drawing.draw_etl_process(gg)
+        drawing.draw_etl_process(rg)
+        drawing.draw_etl_process(subset_extract02)
         self.assertEqual(True, True)
 
 
