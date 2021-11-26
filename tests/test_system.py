@@ -1,8 +1,11 @@
 import unittest
 
+import networkx
+
 import getl
 
-from getl import drawing
+from getl import drawing, gg_executor
+from getl import graph_util
 
 
 class MyTestCase(unittest.TestCase):
@@ -11,9 +14,19 @@ class MyTestCase(unittest.TestCase):
 
         getl.scan_for_plugins('tests.node_processes')
 
-        gg = getl.getl_graph.build()
-        drawing.draw_etl_process(gg)
+        gg: networkx.DiGraph = getl.getl_graph.build()
 
+        rg, run_order = gg_executor.create_linear_run(gg)
+
+        # running the whole process
+        for np in run_order:
+            rg.nodes[np]['np_func']()
+
+        subset_extract02 = graph_util.get_process_starting_at(gg, 'extract02')
+
+        # drawing.draw_etl_process(gg)
+        # drawing.draw_etl_process(rg)
+        # drawing.draw_etl_process(subset_extract02)
         self.assertEqual(True, True)
 
 
