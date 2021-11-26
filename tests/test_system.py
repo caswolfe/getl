@@ -2,7 +2,7 @@ import unittest
 import networkx
 import getl
 
-from getl import executor, graph_util, drawing
+from getl import drawing, executor, graph, graph_util
 
 
 class MyTestCase(unittest.TestCase):
@@ -11,7 +11,7 @@ class MyTestCase(unittest.TestCase):
 
         getl.scan_for_plugins('tests.node_processes')
 
-        gg: networkx.DiGraph = getl.graph.build()
+        gg: networkx.DiGraph = graph.build()
 
         rg, run_order = executor.create_linear_run(gg)
 
