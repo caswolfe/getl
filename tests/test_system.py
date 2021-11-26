@@ -23,10 +23,17 @@ class MyTestCase(unittest.TestCase):
             rg.nodes[np]['np_func']()
 
         subset_extract02 = graph_util.get_process_starting_at(gg, 'extract02')
+        subset_load2 = graph_util.get_process_ending_at(gg, 'load2')
+
+        rg2, run_order2 = gg_executor.create_linear_run(subset_extract02)
+        rg3, run_order3 = gg_executor.create_linear_run(subset_load2)
 
         drawing.draw_etl_process(gg)
         drawing.draw_etl_process(rg)
         drawing.draw_etl_process(subset_extract02)
+        drawing.draw_etl_process(rg2)
+        drawing.draw_etl_process(subset_load2)
+        drawing.draw_etl_process(rg3)
         self.assertEqual(True, True)
 
 

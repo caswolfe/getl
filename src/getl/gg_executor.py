@@ -1,7 +1,7 @@
 import networkx
 
 
-def create_linear_run(process_graph: networkx.DiGraph):  # , flags=util.get_default_flags()
+def create_linear_run(process_graph: networkx.DiGraph):
 
     node_gen_dict = dict()
     run_graph: networkx.DiGraph = networkx.create_empty_copy(process_graph)
