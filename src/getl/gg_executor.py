@@ -7,9 +7,7 @@ def create_linear_run(process_graph: networkx.DiGraph):
     run_graph: networkx.DiGraph = networkx.create_empty_copy(process_graph)
 
     for node in process_graph.nodes:
-        print(f'node: {node}')
         node_gen = process_graph.nodes[node]['np_generation']
-        print(f'gen: {node_gen}')
         if node_gen not in node_gen_dict.keys():
             node_gen_dict[node_gen] = [node]
         else:
