@@ -1,4 +1,4 @@
-from getl.getl_graph import node_process
+from getl.graph import node_process
 
 
 @node_process(requires=['transform04'])

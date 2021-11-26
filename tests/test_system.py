@@ -1,11 +1,8 @@
 import unittest
-
 import networkx
-
 import getl
 
-from getl import drawing, gg_executor
-from getl import graph_util
+from getl import executor, graph_util, drawing
 
 
 class MyTestCase(unittest.TestCase):
@@ -14,9 +11,9 @@ class MyTestCase(unittest.TestCase):
 
         getl.scan_for_plugins('tests.node_processes')
 
-        gg: networkx.DiGraph = getl.getl_graph.build()
+        gg: networkx.DiGraph = getl.graph.build()
 
-        rg, run_order = gg_executor.create_linear_run(gg)
+        rg, run_order = executor.create_linear_run(gg)
 
         # running the whole process
         print('\n\nrun order 1')
@@ -26,8 +23,8 @@ class MyTestCase(unittest.TestCase):
         subset_extract02 = graph_util.get_process_starting_at(gg, 'extract02')
         subset_load2 = graph_util.get_process_ending_at(gg, 'load2')
 
-        rg2, run_order2 = gg_executor.create_linear_run(subset_extract02)
-        rg3, run_order3 = gg_executor.create_linear_run(subset_load2)
+        rg2, run_order2 = executor.create_linear_run(subset_extract02)
+        rg3, run_order3 = executor.create_linear_run(subset_load2)
 
         print('\n\nrun order 1')
         for np in run_order2:
