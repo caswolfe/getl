@@ -28,12 +28,12 @@ class MyTestCase(unittest.TestCase):
         rg2, run_order2 = gg_executor.create_linear_run(subset_extract02)
         rg3, run_order3 = gg_executor.create_linear_run(subset_load2)
 
-        drawing.draw_etl_process(gg)
-        drawing.draw_etl_process(rg)
-        drawing.draw_etl_process(subset_extract02)
-        drawing.draw_etl_process(rg2)
-        drawing.draw_etl_process(subset_load2)
-        drawing.draw_etl_process(rg3)
+        drawing.draw_etl_process(gg, 'getl graph')
+        drawing.draw_etl_process(rg, 'running graph')
+        drawing.draw_etl_process(subset_extract02, 'process starting at "extract02"')
+        drawing.draw_etl_process(rg2, 'running graph of "process starting at "extract02""')
+        drawing.draw_etl_process(subset_load2, 'process ending at "load2"')
+        drawing.draw_etl_process(rg3, 'running graph of "process ending at "load2""')
         self.assertEqual(True, True)
 
 
