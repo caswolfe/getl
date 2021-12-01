@@ -1,3 +1,5 @@
+import logging
+
 import networkx
 
 potential_node_processes = []
@@ -21,6 +23,8 @@ def build():
 
     global potential_node_processes
 
+    log = logging.getLogger('getl')
+
     process_graph = networkx.DiGraph()
 
     np_processed = []
@@ -30,6 +34,8 @@ def build():
 
         (fname, func, requires) = np_to_process.pop()
         generation = 0
+
+        log.debug(f'processing "{fname}", requiring {requires}')
 
         if len(requires) != 0:
             mpg = -1
@@ -41,11 +47,13 @@ def build():
                     mpg = min(mpg, process_graph.nodes[requirement]['np_generation'] - 1)
 
             if len(unmet_requirements) > 0:
+                # TODO: detect when requirement is not present, currently runs forever...
                 np_to_process.insert(0, (fname, func, requires))
                 continue
             generation = mpg
 
-        assert fname not in process_graph.nodes, 'node_process name must be unique'
+        log.debug(f'adding "{fname}"')
+        assert fname not in process_graph.nodes, f'node_process name "{fname}" must be unique'
         process_graph.add_node(fname)
         process_graph.nodes[fname]['np_func'] = func
         process_graph.nodes[fname]['np_generation'] = generation
