@@ -65,11 +65,13 @@ def build():
 def clear_dir_recurse(directory: Path) -> None:
     """ Recursively clears a directory of all files but leaves directories."""
 
-    # TODO: ignore ".gignore" files
+    if str(directory) == '':
+        return
 
     for root, subdirs, files in os.walk(directory):
         for file in files:
-            os.unlink(os.path.join(root, file))
+            if file != '.gitignore':
+                os.unlink(os.path.join(root, file))
 
 
 def create_linear_run(process_graph: networkx.DiGraph):
