@@ -1,8 +1,13 @@
 import logging
 import networkx
+import os
+import pandas
+import re
+import sys
 
 from matplotlib import pyplot
-from typing import Any
+from pathlib import Path
+from typing import Any, Dict
 
 potential_node_processes = []
 
@@ -57,6 +62,16 @@ def build():
     return process_graph
 
 
+def clear_dir_recurse(directory: Path) -> None:
+    """ Recursively clears a directory of all files but leaves directories."""
+
+    # TODO: ignore ".gignore" files
+
+    for root, subdirs, files in os.walk(directory):
+        for file in files:
+            os.unlink(os.path.join(root, file))
+
+
 def create_linear_run(process_graph: networkx.DiGraph):
 
     node_gen_dict = dict()
@@ -102,6 +117,43 @@ def draw_etl_process(graph: networkx.Graph, title='', node_color='#1f78b4'):
         node_color=node_color,
     )
     pyplot.show()
+
+
+def find_in_csv(workspace_path: Path, column_name: str, obj: str) -> Dict[str, pandas.DataFrame]:
+    """
+    Searches all csv files in the workspace_path for lines with the matching obj in the specified column.
+    :param workspace_path:
+    :param column_name:
+    :param obj:
+    :return:
+    """
+
+    log = logging.getLogger('getl')
+
+    match_dict = dict()
+
+    for root, sub_dirs, files in os.walk(workspace_path):
+        for filename in files:
+
+            if '.csv' not in filename:
+                continue
+
+            file_path = Path(os.path.join(root, filename))
+            log.debug(f'touching {file_path.resolve()}')
+            with file_path.open() as file_obj:
+
+                line = file_obj.readline()
+                column_matches = re.match(column_name, line)
+                if not column_matches:
+                    continue
+
+                log.debug(f'column match!')
+                df_matches = pandas.read_csv(file_path, dtype=str)
+                df_matches = df_matches[df_matches[column_name].str.match(obj)]
+
+            match_dict.update({file_path.name: df_matches.copy()})
+
+    return match_dict
 
 
 def get_process_starting_at(graph: networkx.DiGraph, node: Any):
@@ -150,6 +202,20 @@ def scan_for_plugins(namespace):
             spec = finder.find_spec(name)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
+
+
+def set_logger_to_console(log_name: str):
+
+    log = logging.getLogger(log_name)
+    log.setLevel(logging.DEBUG)
+    log_formatter = logging.Formatter(
+        "%(asctime)s [%(filename)s:%(lineno)d] %(message)s"
+    )
+
+    log_handler = logging.StreamHandler(sys.stdout)
+    log_handler.setLevel(logging.DEBUG)
+    log_handler.setFormatter(log_formatter)
+    log.addHandler(log_handler)
 
 
 # function decorators
