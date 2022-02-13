@@ -8,11 +8,11 @@ from pathlib import Path
 file_names = [
     'name.basics',
     'title.akas',
-    # 'title.basics',
-    # 'title.crew',
-    # 'title.episode',
-    # 'title.principals',
-    # 'title.ratings',
+    'title.basics',
+    'title.crew',
+    'title.episode',
+    'title.principals',
+    'title.ratings',
 ]
 
 
@@ -24,12 +24,12 @@ def download_imdb():
     """
 
     log = logging.getLogger('getl.etl02_imdb')
-    workspace_path = Path('download_dump')
+    workspace_path = Path('etl02_imdb/download_dump')
     log.debug(f'workspace_path: {workspace_path.resolve()}')
 
     # TODO: uncomment after test of workspace path
-    # for fn in file_names:
-    #     download_imdb_file(fn, workspace_path, log)
+    for fn in file_names:
+        download_imdb_file(fn, workspace_path, log)
 
 
 def download_imdb_file(prefix: str, dump_dir: Path, log: logging.Logger):

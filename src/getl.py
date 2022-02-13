@@ -199,7 +199,9 @@ def get_process_between(graph: networkx.DiGraph, node_start, node_end):
 
 def get_processes_between(graph: networkx.DiGraph, start_nodes=[], end_nodes=[]):
 
-    if len(start_nodes) == 0:
+    if len(start_nodes) == 0 and len(end_nodes) == 0:
+        return graph.copy()
+    elif len(start_nodes) == 0:
         grouping_sets = [('', end_node) for end_node in end_nodes]
     elif len(end_nodes) == 0:
         grouping_sets = [(start_node, '') for start_node in start_nodes]
