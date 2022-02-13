@@ -182,6 +182,45 @@ def get_process_ending_at(graph: networkx.DiGraph, node: Any):
     return subset_graph
 
 
+def get_process_between(graph: networkx.DiGraph, node_start, node_end):
+
+    graph_path = networkx.all_simple_paths(graph, source=node_start, target=node_end)
+    subset_include = set()
+    for gp in graph_path:
+        subset_include.update(gp)
+    subset_exclude = [n for n in graph.nodes if n not in subset_include]
+    subset_graph = graph.copy()
+
+    while len(subset_exclude) > 0:
+        subset_graph.remove_node(subset_exclude.pop())
+
+    return subset_graph
+
+
+def get_processes_between(graph: networkx.DiGraph, start_nodes=[], end_nodes=[]):
+
+    if len(start_nodes) == 0:
+        grouping_sets = [('', end_node) for end_node in end_nodes]
+    elif len(end_nodes) == 0:
+        grouping_sets = [(start_node, '') for start_node in start_nodes]
+    else:
+        grouping_sets = [(start_node, end_node) for end_node in end_nodes for start_node in start_nodes]
+
+    subset_graphs = []
+    for (start_node, end_node) in grouping_sets:
+
+        if start_node == '':
+            gs_graph = get_process_ending_at(graph, end_node)
+        elif end_node == '':
+            gs_graph = get_process_starting_at(graph, start_node)
+        else:
+            gs_graph = get_process_between(graph, start_node, end_node)
+
+        subset_graphs.append(gs_graph)
+
+    return networkx.compose_all(subset_graphs)
+
+
 def scan_for_plugins(namespace):
     """
     https://play.pixelblaster.ro/blog/2017/12/18/a-quick-and-dirty-mini-plugin-system-for-python/
