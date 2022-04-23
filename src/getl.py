@@ -7,23 +7,34 @@ import sys
 
 from matplotlib import pyplot
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-potential_node_processes = []
+_potential_node_processes = []
 
-# functions
+# ---------------
+# -- FUNCTIONS --
+# ---------------
 
 
-def build():
+def build() -> networkx.DiGraph:
+    """
+    Creates a getl graph from functions stored in the global
+    "potential_node_processes" variable, respecting given requirements.
+    (Functions will exist in potential_node_processes if
+    they are loaded with the @node_process function decorator)
 
-    global potential_node_processes
+    Returns:
+        a getl graph
+    """
+    global _potential_node_processes
 
     log = logging.getLogger('getl')
+    log.info('building...')
 
     process_graph = networkx.DiGraph()
 
     np_processed = []
-    np_to_process = potential_node_processes.copy()
+    np_to_process = _potential_node_processes.copy()
 
     while len(np_to_process) > 0:
 
@@ -62,8 +73,13 @@ def build():
     return process_graph
 
 
-def clear_dir_recurse(directory: Path) -> None:
-    """ Recursively clears a directory of all files but leaves directories."""
+def clear_dir_recurse(directory: Path):
+    """
+    Recursively clears a directory of all files but leaves folders.
+
+    Args:
+        directory: path of the top-level folder to clean
+    """
 
     if str(directory) == '':
         return
@@ -74,10 +90,17 @@ def clear_dir_recurse(directory: Path) -> None:
                 os.unlink(os.path.join(root, file))
 
 
-def create_linear_run(process_graph: networkx.DiGraph):
+def create_linear_run(process_graph: networkx.DiGraph) -> List[str]:
+    """
+    Iterates through a graph and creates a run order based off of 'np_generation'.
 
+    Args:
+        process_graph: a getl graph
+
+    Returns:
+        a list of all nodes in a pathed order
+    """
     node_gen_dict = dict()
-    run_graph: networkx.DiGraph = networkx.create_empty_copy(process_graph)
 
     for node in process_graph.nodes:
         node_gen = process_graph.nodes[node]['np_generation']
@@ -86,24 +109,46 @@ def create_linear_run(process_graph: networkx.DiGraph):
         else:
             node_gen_dict[node_gen].append(node)
 
-    node_master_list = []
+    node_master_list: List[str] = []
     gen_high = max(node_gen_dict.keys())
     gen_low = min(node_gen_dict.keys()) - 1
     for i in range(gen_high, gen_low, -1):
         for np in node_gen_dict[i]:
             node_master_list.append(np)
 
+    return node_master_list
+
+
+def create_linear_run_graph(process_graph: networkx.DiGraph, node_master_list) -> networkx.DiGraph:
+    """
+    Creates a new graph with new edges from the run order.
+
+    Args:
+        process_graph: a getl graph
+        node_master_list: a linear run from create_linear_run
+
+    Returns:
+        a getl graph reorganized to a single path
+    """
+    run_graph: networkx.DiGraph = networkx.create_empty_copy(process_graph)
     for i in range(1, len(node_master_list)):
         run_graph.add_edge(
             node_master_list[i-1],
             node_master_list[i]
         )
 
-    return run_graph, node_master_list
+    return run_graph
 
 
 def draw_etl_process(graph: networkx.Graph, title='', node_color='#1f78b4'):
+    """
+    using pyplot, create & show the graph sorted by each node's 'np_generation'
 
+    Args:
+        graph: a getl graph
+        title: for the graph
+        node_color: color of the nodes
+    """
     pyplot.figure(figsize=(7, 5))
     ax = pyplot.gca()
     ax.set_title(title)
@@ -124,10 +169,14 @@ def draw_etl_process(graph: networkx.Graph, title='', node_color='#1f78b4'):
 def find_in_csv(workspace_path: Path, column_name: str, obj: str) -> Dict[str, pandas.DataFrame]:
     """
     Searches all csv files in the workspace_path for lines with the matching obj in the specified column.
-    :param workspace_path:
-    :param column_name:
-    :param obj:
-    :return:
+
+    Args:
+        workspace_path: directory to search
+        column_name: column name to search under
+        obj: target to find
+
+    Returns:
+        a dictionary with the keys of the dataframe file names and the values those dataframes themselves
     """
 
     log = logging.getLogger('getl')
@@ -158,8 +207,17 @@ def find_in_csv(workspace_path: Path, column_name: str, obj: str) -> Dict[str, p
     return match_dict
 
 
-def get_process_starting_at(graph: networkx.DiGraph, node: Any):
+def get_process_starting_at(graph: networkx.DiGraph, node: Any) -> networkx.DiGraph:
+    """
+    Extracts the node and all its descendants from the graph.
 
+    Args:
+        graph: a getl graph
+        node: the node to act as a root in the subset graph
+
+    Returns:
+        the subset graph
+    """
     subset_include = list(networkx.descendants(graph, node)) + [node]
     subset_exclude = [n for n in graph.nodes if n not in subset_include]
     subset_graph = graph.copy()
@@ -171,7 +229,16 @@ def get_process_starting_at(graph: networkx.DiGraph, node: Any):
 
 
 def get_process_ending_at(graph: networkx.DiGraph, node: Any):
+    """
+    Extracts the node and all its ancestors from the graph.
 
+    Args:
+        graph: a getl graph
+        node: the node to act as a root in the subset graph
+
+    Returns:
+        the subset graph
+    """
     subset_include = list(networkx.ancestors(graph, node)) + [node]
     subset_exclude = [n for n in graph.nodes if n not in subset_include]
     subset_graph = graph.copy()
@@ -183,7 +250,17 @@ def get_process_ending_at(graph: networkx.DiGraph, node: Any):
 
 
 def get_process_between(graph: networkx.DiGraph, node_start, node_end):
+    """
+    Extracts the start, end, and all nodes from start to end.
 
+    Args:
+        graph: a getl graph
+        node_start: the graph node to start from
+        node_end: the graph node to end at
+
+    Returns:
+        the subset graph
+    """
     graph_path = networkx.all_simple_paths(graph, source=node_start, target=node_end)
     subset_include = set()
     for gp in graph_path:
@@ -198,7 +275,17 @@ def get_process_between(graph: networkx.DiGraph, node_start, node_end):
 
 
 def get_processes_between(graph: networkx.DiGraph, start_nodes=[], end_nodes=[]):
+    """
+    Extracts the start, end, and all nodes from start to end - for any number of starts & ends (including 0)
 
+    Args:
+        graph: a getl graph
+        start_nodes: the graph nodes to start from
+        end_nodes: the graph nodes to end at
+
+    Returns:
+        the subset graph
+    """
     if len(start_nodes) == 0 and len(end_nodes) == 0:
         return graph.copy()
     elif len(start_nodes) == 0:
@@ -227,10 +314,9 @@ def scan_for_plugins(namespace):
     """
     https://play.pixelblaster.ro/blog/2017/12/18/a-quick-and-dirty-mini-plugin-system-for-python/
 
-    :param namespace:
-    :return:
+    Args:
+        namespace:
     """
-
     import importlib
     import pkgutil
 
@@ -247,10 +333,16 @@ def scan_for_plugins(namespace):
             spec.loader.exec_module(module)
 
 
-def set_logger_to_console(log_name: str):
+def set_logger_to_console(log_name: str, log_level=logging.DEBUG):
+    """
+    sets the log to print to the console, with some formatting
 
+    Args:
+        log_name: log name
+        log_level: default logging.DEBUG, see https://docs.python.org/3/library/logging.html#logging-levels
+    """
     log = logging.getLogger(log_name)
-    log.setLevel(logging.DEBUG)
+    log.setLevel(log_level)
     log_formatter = logging.Formatter(
         "%(asctime)s [%(filename)s:%(lineno)d] %(message)s"
     )
@@ -261,17 +353,28 @@ def set_logger_to_console(log_name: str):
     log.addHandler(log_handler)
 
 
-# function decorators
+# -------------------------
+# -- FUNCTION DECORATORS --
+# -------------------------
 
 
 def node_process(requires: list[str] = []):
+    """
+    function decorator to add a function to the node_process graph, will be a child of all required nodes
+
+    Args:
+        requires: a list of function names of node processes
+
+    Returns:
+        the wrapper function
+    """
 
     def wrapper_node_process(func):
 
-        global potential_node_processes
+        global _potential_node_processes
 
         fname = func.__name__
-        potential_node_processes.append((fname, func, requires))
+        _potential_node_processes.append((fname, func, requires))
 
         return func
 

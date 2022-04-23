@@ -55,9 +55,9 @@ def run(namespace, start_nodes=[], end_nodes=[], whitelist=[], blacklist=[]):
     while len(nodes_to_remove) > 0:
         subset_graph.remove_node(nodes_to_remove.pop())
 
-    rg, run_order = getl.create_linear_run(subset_graph)
+    run_order = getl.create_linear_run(subset_graph)
     for np in run_order:
-        rg.nodes[np]['np_func']()
+        subset_graph.nodes[np]['np_func']()
 
     # getl.draw_etl_process(gg, '1) gg')
     # getl.draw_etl_process(graph, '2) graph')
