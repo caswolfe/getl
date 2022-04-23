@@ -1,6 +1,7 @@
 import argparse
 import getl
 import networkx
+import logging
 
 
 def main():
@@ -12,14 +13,12 @@ def main():
     parser.add_argument('--end', nargs='*', default=[])
 
     pg_lists = parser.add_mutually_exclusive_group()
-    pg_lists.add_argument('--whitelist', nargs='*', default=[])
+    pg_lists.add_argument('--whitelist', '--only', nargs='*', default=[])
     pg_lists.add_argument('--blacklist', nargs='*', default=[])
 
     parser.add_argument('--log', action='store_true', default=False)
 
     args = parser.parse_args()
-
-    print(args)
 
     if args.log:
         getl.set_logger_to_console('getl')
@@ -34,6 +33,14 @@ def main():
 
 
 def run(namespace, start_nodes=[], end_nodes=[], whitelist=[], blacklist=[]):
+
+    log = logging.getLogger('getl')
+    log.info('running:')
+    log.info(f'\tnamespace: {namespace}')
+    log.info(f'\tstart_nodes: {start_nodes}')
+    log.info(f'\tend_nodes: {end_nodes}')
+    log.info(f'\twhitelist: {whitelist}')
+    log.info(f'\tblacklist: {blacklist}')
 
     assert (len(whitelist) == 0 and len(blacklist) >= 0) \
         or (len(whitelist) >= 0 and len(blacklist) == 0), \
@@ -57,6 +64,7 @@ def run(namespace, start_nodes=[], end_nodes=[], whitelist=[], blacklist=[]):
 
     run_order = getl.create_linear_run(subset_graph)
     for np in run_order:
+        log.debug(f'running {np}')
         subset_graph.nodes[np]['np_func']()
 
     # getl.draw_etl_process(gg, '1) gg')

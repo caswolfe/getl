@@ -70,6 +70,7 @@ def build() -> networkx.DiGraph:
 
         np_processed.append(fname)
 
+    log.info('finished building!')
     return process_graph
 
 
@@ -80,6 +81,9 @@ def clear_dir_recurse(directory: Path):
     Args:
         directory: path of the top-level folder to clean
     """
+
+    log = logging.getLogger('getl')
+    log.debug(f'clearing {directory.resolve()} of files recursively')
 
     if str(directory) == '':
         return
